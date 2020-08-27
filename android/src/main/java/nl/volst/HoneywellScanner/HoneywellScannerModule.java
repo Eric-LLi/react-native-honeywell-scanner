@@ -63,37 +63,47 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 
 	@Override
 	public void onHostResume() {
-		if (reader != null) {
-			try {
-				reader.claim();
-			} catch (ScannerUnavailableException e) {
-				//
-			}
-		}
+//		try {
+//			if (reader != null) {
+//				reader.claim();
+//			}
+//		} catch (Exception ex) {
+//			Log.e(TAG, ex.getMessage());
+//		}
+
 	}
 
 	@Override
 	public void onHostPause() {
-		if (reader != null) {
-			// release the scanner claim so we don't get any scanner
-			// notifications while paused.
-			reader.release();
-		}
+//		try {
+//			if (reader != null) {
+//				// release the scanner claim so we don't get any scanner
+//				// notifications while paused.
+//				reader.release();
+//			}
+//		} catch (Exception ex) {
+//			Log.e(TAG, ex.getMessage());
+//		}
+
 	}
 
 	@Override
 	public void onHostDestroy() {
-		if (reader != null) {
-			reader.removeBarcodeListener(this);
-			reader.close();
+		try {
+			if (reader != null) {
+				reader.removeBarcodeListener(this);
+				reader.close();
 
-			reader = null;
-		}
+				reader = null;
+			}
 
-		if (manager != null) {
-			manager.close();
+			if (manager != null) {
+				manager.close();
 
-			manager = null;
+				manager = null;
+			}
+		} catch (Exception ex) {
+			Log.e(TAG, ex.getMessage());
 		}
 	}
 
@@ -167,13 +177,22 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 
 	@ReactMethod
 	public void stopReader(Promise promise) {
-		if (reader != null) {
-			reader.close();
+		try {
+			if (reader != null) {
+				reader.close();
+
+				reader = null;
+			}
+			if (manager != null) {
+				manager.close();
+
+				manager = null;
+			}
+			promise.resolve(null);
+		} catch (Exception ex) {
+			promise.reject(ex);
 		}
-		if (manager != null) {
-			manager.close();
-		}
-		promise.resolve(null);
+
 	}
 
 	@ReactMethod
