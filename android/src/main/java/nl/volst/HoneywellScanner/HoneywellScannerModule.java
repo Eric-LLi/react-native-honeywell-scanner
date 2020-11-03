@@ -42,6 +42,9 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	private AidcManager manager;
 	private BarcodeReader reader;
 	private ReactApplicationContext mReactContext;
+	private static boolean isClaimed = false;
+
+	private static boolean isReading = false;
 
 	private static final String BARCODE_READ_SUCCESS = "barcodeReadSuccess";
 	private static final String BARCODE_READ_FAIL = "barcodeReadFail";
@@ -62,7 +65,11 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	public void onHostResume() {
 		try {
 			if (reader != null) {
-				reader.claim();
+				if (!isClaimed) {
+					reader.claim();
+
+					isClaimed = true;
+				}
 			}
 		} catch (Exception ex) {
 			Log.e(TAG, ex.getMessage());
@@ -73,9 +80,15 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	public void onHostPause() {
 		try {
 			if (reader != null) {
+				doStopScan();
+
 				// release the scanner claim so we don't get any scanner
 				// notifications while paused.
-				reader.release();
+				if (isClaimed) {
+					reader.release();
+
+					isClaimed = false;
+				}
 			}
 		} catch (Exception ex) {
 			Log.e(TAG, ex.getMessage());
@@ -85,6 +98,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	@Override
 	public void onHostDestroy() {
 		try {
+			doStopScan();
+
 			if (reader != null) {
 				reader.removeBarcodeListener(this);
 				reader.close();
@@ -138,12 +153,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 		AidcManager.create(mReactContext, new CreatedCallback() {
 			@Override
 			public void onCreated(AidcManager aidcManager) {
-				manager = aidcManager;
 
-				if (reader != null) {
-					reader.release();
-					reader.close();
-				}
+				manager = aidcManager;
 
 				try {
 					reader = manager.createBarcodeReader("dcs.scanner.ring");
@@ -171,6 +182,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 
 					reader.claim();
 
+					isClaimed = true;
+
 					promise.resolve(true);
 				} catch (ScannerUnavailableException e) {
 					promise.reject(e);
@@ -179,6 +192,7 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 				} catch (Exception e) {
 					promise.reject(e);
 				}
+
 			}
 		});
 	}
@@ -186,15 +200,19 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	@ReactMethod
 	public void stopReader(Promise promise) {
 		try {
-			if (reader != null) {
-				reader.close();
+			if (isClaimed) {
+				if (reader != null) {
+					reader.close();
 
-				reader = null;
-			}
-			if (manager != null) {
-				manager.close();
+					reader = null;
+				}
+				if (manager != null) {
+					manager.close();
 
-				manager = null;
+					manager = null;
+				}
+
+				isClaimed = false;
 			}
 			promise.resolve(null);
 		} catch (Exception ex) {
@@ -205,43 +223,50 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 
 	@ReactMethod
 	public void StartScan(Promise promise) {
-		if (reader != null) {
-			try {
-//				reader.softwareTrigger(true);
+		try {
+			doStartScan();
 
-				reader.aim(true);
-				reader.light(true);
-				reader.decode(true);
-
-				promise.resolve(true);
-			} catch (ScannerNotClaimedException e) {
-				// TODO Auto-generated catch block
-				promise.reject(e);
-			} catch (ScannerUnavailableException e) {
-				// TODO Auto-generated catch block
-				promise.reject(e);
-			}
+			promise.resolve(true);
+		} catch (Exception e) {
+			promise.reject(e);
 		}
 	}
 
 	@ReactMethod
 	public void StopScan(Promise promise) {
-		if (reader != null) {
-			try {
-//				reader.softwareTrigger(false);
+		try {
+			doStopScan();
 
-				reader.aim(false);
-				reader.light(false);
-				reader.decode(false);
+			promise.resolve(true);
+		} catch (Exception e) {
+			promise.reject(e);
+		}
+	}
 
-				promise.resolve(true);
-			} catch (ScannerNotClaimedException e) {
-				// TODO Auto-generated catch block
-				promise.reject(e);
-			} catch (ScannerUnavailableException e) {
-				// TODO Auto-generated catch block
-				promise.reject(e);
-			}
+	private void doClaimScanner() {
+		//
+	}
+
+	private void doStartScan() throws Exception {
+		doStopScan();
+
+		if (reader != null && !isReading) {
+			reader.aim(true);
+			reader.light(true);
+			reader.decode(true);
+
+			isReading = true;
+		}
+	}
+
+
+	private void doStopScan() throws Exception {
+		if (reader != null && isReading) {
+			reader.aim(false);
+			reader.light(false);
+			reader.decode(false);
+
+			isReading = false;
 		}
 	}
 
