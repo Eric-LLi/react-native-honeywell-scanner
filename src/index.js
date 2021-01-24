@@ -2,6 +2,11 @@ const ReactNative = require('react-native');
 const { NativeModules, DeviceEventEmitter } = ReactNative;
 const HoneywellScanner = NativeModules.HoneywellScanner || {}; // Hacky fallback for iOS
 
+export const SCANNER_EVENTS = {
+	SUCCESS: 'barcodeReadSuccess',
+	FAIL: 'barcodeReadFail',
+};
+
 const allowedEvents = [
   HoneywellScanner.BARCODE_READ_SUCCESS,
   HoneywellScanner.BARCODE_READ_FAIL,
@@ -31,4 +36,4 @@ HoneywellScanner.off = (eventName, handler) => {
   DeviceEventEmitter.removeListener(eventName, handler);
 };
 
-module.exports = HoneywellScanner;
+export default HoneywellScanner;
