@@ -143,7 +143,7 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	/*******************************/
 
 	@ReactMethod
-	public void startReader(final Promise promise) {
+	public void startReader(final boolean isExternal, final Promise promise) {
 		AidcManager.create(mReactContext, new CreatedCallback() {
 			@Override
 			public void onCreated(AidcManager aidcManager) {
@@ -151,8 +151,11 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 				manager = aidcManager;
 
 				try {
-					reader = manager.createBarcodeReader("dcs.scanner.ring");
-
+					if (isExternal) {
+						reader = manager.createBarcodeReader("dcs.scanner.ring");
+					} else {
+						reader = manager.createBarcodeReader();
+					}
 					reader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
 							BarcodeReader.TRIGGER_CONTROL_MODE_CLIENT_CONTROL);
 
