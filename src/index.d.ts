@@ -1,4 +1,4 @@
-export declare function startReader(): Promise<boolean>;
+export declare function startReader(isExternal: boolean): Promise<boolean>;
 export declare function stopReader(): Promise<null>;
 
 export declare function StartScan(): Promise<boolean>;

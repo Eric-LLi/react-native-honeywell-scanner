@@ -144,6 +144,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 
 	@ReactMethod
 	public void startReader(final boolean isExternal, final Promise promise) {
+		Log.d(TAG, "startReader");
+
 		AidcManager.create(mReactContext, new CreatedCallback() {
 			@Override
 			public void onCreated(AidcManager aidcManager) {
@@ -193,6 +195,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 
 	@ReactMethod
 	public void stopReader(Promise promise) {
+		Log.d(TAG, "stopReader");
+
 		try {
 
 			if (isReading) {
@@ -234,6 +238,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	}
 
 	private void doClose() {
+		Log.d(TAG, "doClose");
+
 		if (reader != null) {
 			reader.removeBarcodeListener(this);
 			reader.close();
@@ -249,6 +255,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	}
 
 	private void doClaimScanner() throws ScannerUnavailableException {
+		Log.d(TAG, "doClaimScanner");
+
 		if (reader != null) {
 			if (!isClaimed) {
 				reader.claim();
@@ -259,6 +267,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	}
 
 	private void doReleaseScanner() {
+		Log.d(TAG, "doReleaseScanner");
+
 		if (reader != null) {
 			if (isClaimed) {
 				reader.release();
@@ -269,6 +279,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	}
 
 	private void doStartScan() throws ScannerUnavailableException, ScannerNotClaimedException {
+		Log.d(TAG, "doStartScan");
+
 		if (reader != null) {
 			if (isReading) {
 				doStopScan();
@@ -283,6 +295,8 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	}
 
 	private void doStopScan() throws ScannerUnavailableException, ScannerNotClaimedException {
+		Log.d(TAG, "doStopScan");
+
 		if (reader != null && isReading) {
 			reader.aim(false);
 			reader.light(false);
