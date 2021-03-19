@@ -146,51 +146,55 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 	public void startReader(final boolean isExternal, final Promise promise) {
 		Log.d(TAG, "startReader");
 
-		AidcManager.create(mReactContext, new CreatedCallback() {
-			@Override
-			public void onCreated(AidcManager aidcManager) {
+		try {
+			AidcManager.create(mReactContext, new CreatedCallback() {
+				@Override
+				public void onCreated(AidcManager aidcManager) {
 
-				manager = aidcManager;
+					manager = aidcManager;
 
-				try {
-					if (isExternal) {
-						reader = manager.createBarcodeReader("dcs.scanner.ring");
-					} else {
-						reader = manager.createBarcodeReader();
+					try {
+						if (isExternal) {
+							reader = manager.createBarcodeReader("dcs.scanner.ring");
+						} else {
+							reader = manager.createBarcodeReader();
+						}
+						reader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
+								BarcodeReader.TRIGGER_CONTROL_MODE_CLIENT_CONTROL);
+
+						reader.setProperty(BarcodeReader.PROPERTY_QR_CODE_ENABLED, true);
+						reader.setProperty(BarcodeReader.PROPERTY_UPC_A_CHECK_DIGIT_TRANSMIT_ENABLED, true);
+						reader.setProperty(BarcodeReader.PROPERTY_UPC_E_CHECK_DIGIT_TRANSMIT_ENABLED, true);
+						reader.setProperty(BarcodeReader.PROPERTY_EAN_8_CHECK_DIGIT_TRANSMIT_ENABLED, true);
+						reader.setProperty(BarcodeReader.PROPERTY_EAN_13_CHECK_DIGIT_TRANSMIT_ENABLED, true);
+
+						// Enable bad read response
+						reader.setProperty(BarcodeReader.PROPERTY_CENTER_DECODE, true);
+
+						// Turn on center decoding
+						reader.setProperty(BarcodeReader.PROPERTY_NOTIFICATION_BAD_READ_ENABLED, true);
+
+						//Enable Datamatrix
+						reader.setProperty(BarcodeReader.PROPERTY_DATAMATRIX_ENABLED, true);
+
+						// register bar code event listener
+						reader.addBarcodeListener(HoneywellScannerModule.this);
+
+						doClaimScanner();
+
+						promise.resolve(true);
+					} catch (ScannerUnavailableException e) {
+						promise.reject(e);
+					} catch (UnsupportedPropertyException e) {
+						promise.reject(e);
+					} catch (Exception e) {
+						promise.reject(e);
 					}
-					reader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
-							BarcodeReader.TRIGGER_CONTROL_MODE_CLIENT_CONTROL);
-
-					reader.setProperty(BarcodeReader.PROPERTY_QR_CODE_ENABLED, true);
-					reader.setProperty(BarcodeReader.PROPERTY_UPC_A_CHECK_DIGIT_TRANSMIT_ENABLED, true);
-					reader.setProperty(BarcodeReader.PROPERTY_UPC_E_CHECK_DIGIT_TRANSMIT_ENABLED, true);
-					reader.setProperty(BarcodeReader.PROPERTY_EAN_8_CHECK_DIGIT_TRANSMIT_ENABLED, true);
-					reader.setProperty(BarcodeReader.PROPERTY_EAN_13_CHECK_DIGIT_TRANSMIT_ENABLED, true);
-
-					// Enable bad read response
-					reader.setProperty(BarcodeReader.PROPERTY_CENTER_DECODE, true);
-
-					// Turn on center decoding
-					reader.setProperty(BarcodeReader.PROPERTY_NOTIFICATION_BAD_READ_ENABLED, true);
-
-					//Enable Datamatrix
-					reader.setProperty(BarcodeReader.PROPERTY_DATAMATRIX_ENABLED, true);
-
-					// register bar code event listener
-					reader.addBarcodeListener(HoneywellScannerModule.this);
-
-					doClaimScanner();
-
-					promise.resolve(true);
-				} catch (ScannerUnavailableException e) {
-					promise.reject(e);
-				} catch (UnsupportedPropertyException e) {
-					promise.reject(e);
-				} catch (Exception e) {
-					promise.reject(e);
 				}
-			}
-		});
+			});
+		} catch (Exception e) {
+			promise.reject(e);
+		}
 	}
 
 	@ReactMethod
