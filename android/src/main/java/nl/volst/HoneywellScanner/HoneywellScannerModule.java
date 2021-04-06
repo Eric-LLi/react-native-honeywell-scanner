@@ -45,6 +45,7 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
 
     private static boolean isReading = false;
 
+    private static final String BARCODE_STATUS = "BARCODE_STATUS";
     private static final String BARCODE_READ_SUCCESS = "barcodeReadSuccess";
     private static final String BARCODE_READ_FAIL = "barcodeReadFail";
 
@@ -281,12 +282,14 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
         }
     }
 
-    private void doStartScan() throws ScannerUnavailableException, ScannerNotClaimedException {
+    private void doStartScan() throws ScannerUnavailableException, ScannerNotClaimedException, InterruptedException {
         Log.d(TAG, "doStartScan");
 
         if (reader != null) {
             if (isReading) {
                 doStopScan();
+
+                Thread.sleep(500);
             }
 
             reader.aim(true);
@@ -294,6 +297,10 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
             reader.decode(true);
 
             isReading = true;
+
+            WritableMap map = Arguments.createMap();
+            map.putBoolean("status", true);
+            sendEvent(BARCODE_STATUS, map);
         }
     }
 
@@ -306,6 +313,10 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
             reader.decode(false);
 
             isReading = false;
+
+            WritableMap map = Arguments.createMap();
+            map.putBoolean("status", false);
+            sendEvent(BARCODE_STATUS, map);
         }
     }
 
@@ -317,6 +328,7 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
     @Override
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = new HashMap<>();
+        constants.put("BARCODE_STATUS", BARCODE_STATUS);
         constants.put("BARCODE_READ_SUCCESS", BARCODE_READ_SUCCESS);
         constants.put("BARCODE_READ_FAIL", BARCODE_READ_FAIL);
         constants.put("isCompatible", isCompatible());
