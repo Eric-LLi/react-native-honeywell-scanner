@@ -156,11 +156,13 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
                     try {
                         if (isExternal) {
                             reader = manager.createBarcodeReader("dcs.scanner.ring");
+                            reader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
+                                    BarcodeReader.TRIGGER_CONTROL_MODE_CLIENT_CONTROL);
                         } else {
                             reader = manager.createBarcodeReader();
+                            reader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
+                                    BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
                         }
-                        reader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
-                                BarcodeReader.TRIGGER_CONTROL_MODE_CLIENT_CONTROL);
 
                         reader.setProperty(BarcodeReader.PROPERTY_QR_CODE_ENABLED, true);
                         reader.setProperty(BarcodeReader.PROPERTY_UPC_A_CHECK_DIGIT_TRANSMIT_ENABLED, true);
