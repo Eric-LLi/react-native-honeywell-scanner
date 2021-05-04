@@ -48,6 +48,7 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
     private static final String BARCODE_STATUS = "BARCODE_STATUS";
     private static final String BARCODE_READ_SUCCESS = "barcodeReadSuccess";
     private static final String BARCODE_READ_FAIL = "barcodeReadFail";
+    private static final String BARCODE = "BARCODE";
 
     public HoneywellScannerModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -126,16 +127,26 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
         }
     }
 
+    private void sendEvent(String eventName, @Nullable String params) {
+        if (mReactContext.hasActiveCatalystInstance()) {
+            if (D) Log.d(TAG, "Sending event: " + eventName);
+            mReactContext
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit(eventName, params);
+        }
+    }
+
     public void onBarcodeEvent(BarcodeReadEvent barcodeReadEvent) {
         if (D) Log.d(TAG, "HONEYWELLSCANNER - Barcode scan read");
-        WritableMap params = Arguments.createMap();
-        params.putString("data", barcodeReadEvent.getBarcodeData());
-        sendEvent(BARCODE_READ_SUCCESS, params);
+//        WritableMap params = Arguments.createMap();
+//        params.putString("data", barcodeReadEvent.getBarcodeData());
+//        sendEvent(BARCODE_READ_SUCCESS, params);
+        sendEvent(BARCODE, barcodeReadEvent.getBarcodeData());
     }
 
     public void onFailureEvent(BarcodeFailureEvent barcodeFailureEvent) {
         if (D) Log.d(TAG, "HONEYWELLSCANNER - Barcode scan failed");
-        sendEvent(BARCODE_READ_FAIL, null);
+//        sendEvent(BARCODE_READ_FAIL, null);
     }
 
     /*******************************/
@@ -321,20 +332,20 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
             sendEvent(BARCODE_STATUS, map);
         }
     }
-
-    private boolean isCompatible() {
-        // This... is not optimal. Need to find a better way to performantly check whether device has a Honeywell scanner
-        return Build.BRAND.toLowerCase().contains("honeywell");
-    }
-
-    @Override
-    public Map<String, Object> getConstants() {
-        final Map<String, Object> constants = new HashMap<>();
-        constants.put("BARCODE_STATUS", BARCODE_STATUS);
-        constants.put("BARCODE_READ_SUCCESS", BARCODE_READ_SUCCESS);
-        constants.put("BARCODE_READ_FAIL", BARCODE_READ_FAIL);
-        constants.put("isCompatible", isCompatible());
-        return constants;
-    }
+//
+//    private boolean isCompatible() {
+//        // This... is not optimal. Need to find a better way to performantly check whether device has a Honeywell scanner
+//        return Build.BRAND.toLowerCase().contains("honeywell");
+//    }
+//
+//    @Override
+//    public Map<String, Object> getConstants() {
+//        final Map<String, Object> constants = new HashMap<>();
+//        constants.put("BARCODE_STATUS", BARCODE_STATUS);
+//        constants.put("BARCODE_READ_SUCCESS", BARCODE_READ_SUCCESS);
+//        constants.put("BARCODE_READ_FAIL", BARCODE_READ_FAIL);
+//        constants.put("isCompatible", isCompatible());
+//        return constants;
+//    }
 
 }
