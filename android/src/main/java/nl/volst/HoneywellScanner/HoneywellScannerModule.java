@@ -158,6 +158,16 @@ public class HoneywellScannerModule extends ReactContextBaseJavaModule implement
         Log.d(TAG, "startReader");
 
         try {
+            if (isReading) {
+                doStopScan();
+            }
+
+            if (isClaimed) {
+                doReleaseScanner();
+            }
+
+            doClose();
+
             AidcManager.create(mReactContext, new CreatedCallback() {
                 @Override
                 public void onCreated(AidcManager aidcManager) {
